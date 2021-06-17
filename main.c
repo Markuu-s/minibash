@@ -3,32 +3,82 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <pwd.h>
+#include <string.h>
 
-int idata = 111;
+void display(char *path, char *user)
+{
+    printf("%s:%s$ ", user, path);
+}
+
+void parse()
+{
+    struct passwd *currentUser = getpwuid(getuid());
+    char currentPath[256] = "/home/";
+    strcat(currentPath, currentUser->pw_name);
+    strcat(currentPath, "/");
+    while (1)
+    {
+        char str[256];
+        switch (fork())
+        {
+        case 0:
+        {
+            display(currentPath, currentUser->pw_name);
+            break;
+        }
+
+        default:
+        {
+            wait(NULL);
+            break;
+        }
+        }
+        scanf("%s", str);
+
+        if ((strncmp(str, "ls", 2) == 0))
+        {
+            ls(currentPath, NULL);
+        } else if((strncmp(str, "cd", 2) == 0)){
+            
+        }
+    }
+}
+
+void ls(char *path, char **flags)
+{
+    switch (fork())
+    {
+    case 0:
+    {
+        execlp("ls", "ls", NULL, NULL);
+        break;
+    }
+
+    default:
+    {
+        wait(NULL);
+        break;
+    }
+    }
+}
 
 int main()
 {
-    pid_t childPid = -1123;
-    int istack = 222;
-    switch (childPid = fork())
+    switch (fork())
     {
-    case -1:
-    {
-        exit(EXIT_FAILURE);
-        break;
-    }
     case 0:
     {
-        idata *= 3;
-        istack *= 3;
+        parse();
+        exit(EXIT_SUCCESS);
         break;
     }
     default:
+    {
+        wait(NULL);
         break;
     }
-    int status;
-    
-    printf("PID=%d %s idata=%d istack=%d\n", getpid(), (childPid == 0) ? "child" : "parent", idata, istack);
-
+    }
     exit(EXIT_SUCCESS);
 }
