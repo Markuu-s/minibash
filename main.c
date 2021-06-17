@@ -12,41 +12,97 @@ void display(char *path, char *user)
     printf("%s:%s$ ", user, path);
 }
 
-void parse()
+char **parse(char *str)
+{
+    char strParse[256][256];
+    int cnt = 0;
+    int idx = 0;
+    for (int i = 0; str[i] != '\0'; ++i)
+    {
+        if (str[i] == ' ')
+        {
+            ++cnt;
+            idx = 0;
+        }
+        else
+        {
+            strParse[cnt][idx++] = str[i];
+        }
+    }
+    return strParse;
+}
+
+void run()
 {
     struct passwd *currentUser = getpwuid(getuid());
     char currentPath[256] = "/home/";
+    int lenPath = 0;
     strcat(currentPath, currentUser->pw_name);
     strcat(currentPath, "/");
+    while (currentPath[lenPath++] != '\0'){};
+
+    switch (fork())
+    {
+    case 0:{
+        chdir(currentPath);
+        break;
+    }
+    
+    default:
+    {
+        wait(NULL);
+        break;
+    }
+    }
     while (1)
     {
-        char str[256];
-        switch (fork())
+        int len = 0;
+        char *str = NULL;
+        printf("!!");
+        display(currentPath, currentUser->pw_name);
+        printf("!!");
+        if (getline(&str, &len, stdin) == -1){
+            printf("ERROR");
+        };
+        printf("!!");
+        printf("!!%d!!", len);
+        char strParse[256][256]; 
+        strcat(strParse, parse(str));
+        printf("!!%s!!", strParse[0]);
+        if ((strncmp(strParse[0], "ls", 2) == 0))
         {
-        case 0:
-        {
-            display(currentPath, currentUser->pw_name);
-            break;
+            ls(strParse);
         }
-
-        default:
+        else if ((strncmp(strParse[0], "cd", 2) == 0))
         {
-            wait(NULL);
-            break;
-        }
-        }
-        scanf("%s", str);
-
-        if ((strncmp(str, "ls", 2) == 0))
-        {
-            ls(currentPath, NULL);
-        } else if((strncmp(str, "cd", 2) == 0)){
-            
+            cd(strParse, &currentPath, &lenPath);
         }
     }
 }
 
-void ls(char *path, char **flags)
+void cd(char **str, char **path, int *lenPath)
+{
+    if (strncmp(str[1], "..", 2) == 0 && str[1][2] == '\0')
+    {
+        (*path)[--*lenPath] = '\0';
+        while((*path)[*lenPath - 1] != '/'){
+            (*path)[--*lenPath] = '\0';
+        }
+        switch (fork())
+        {
+        case 0:
+            chdir(*path);
+            break;
+        
+        default:
+            wait(NULL);
+            break;
+        }
+    }
+}
+
+
+void ls(char **str)
 {
     switch (fork())
     {
@@ -70,7 +126,7 @@ int main()
     {
     case 0:
     {
-        parse();
+        run();
         exit(EXIT_SUCCESS);
         break;
     }
