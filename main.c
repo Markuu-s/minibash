@@ -14,93 +14,108 @@ void display(char *path, char *user)
 
 char **parse(char *str)
 {
-    char strParse[256][256];
-    int cnt = 0;
-    int idx = 0;
-    for (int i = 0; str[i] != '\0'; ++i)
+    char *p = strtok(str, " ");
+    char **res = NULL;
+    int n_space = 0;
+    while (p)
     {
-        if (str[i] == ' ')
+        res = realloc(res, sizeof(char *) * ++n_space);
+
+        if (res == NULL)
         {
-            ++cnt;
-            idx = 0;
+            exit(EXIT_FAILURE);
         }
-        else
-        {
-            strParse[cnt][idx++] = str[i];
-        }
+        res[n_space - 1] = p;
+
+        p = strtok(NULL, " ");
     }
-    return strParse;
+    res = realloc(res, sizeof(char *) * (n_space + 1));
+    res[n_space] = 0;
+    return res;
+}
+
+char *readLine()
+{
+    int lenStr = 0;
+    char *str = NULL;
+    getline(&str, &lenStr, stdin);
+    return str;
+}
+
+void setHomePath(char **path, int *lenPath, char *userName)
+{
+    (*path) = (char *)malloc(sizeof(char) * 256);
+    for (int i = 0; i < 256; ++i)
+    {
+        (*path)[i] = '\0';
+    }
+    strcat(*path, "/home/");
+    strcat(*path, userName);
+    strcat(*path, "/");
+    for (; (*path)[*lenPath] != '\0'; ++*lenPath)
+        ;
+    chdir(*path);
 }
 
 void run()
 {
     struct passwd *currentUser = getpwuid(getuid());
-    char currentPath[256] = "/home/";
+    char *currentPath = NULL;
     int lenPath = 0;
-    strcat(currentPath, currentUser->pw_name);
-    strcat(currentPath, "/");
-    while (currentPath[lenPath++] != '\0'){};
-
-    switch (fork())
-    {
-    case 0:{
-        chdir(currentPath);
-        break;
-    }
-    
-    default:
-    {
-        wait(NULL);
-        break;
-    }
-    }
+    setHomePath(&currentPath, &lenPath, currentUser->pw_name);
     while (1)
     {
-        int len = 0;
-        char *str = NULL;
-        printf("!!");
-        display(currentPath, currentUser->pw_name);
-        printf("!!");
-        if (getline(&str, &len, stdin) == -1){
-            printf("ERROR");
-        };
-        printf("!!");
-        printf("!!%d!!", len);
-        char strParse[256][256]; 
-        strcat(strParse, parse(str));
-        printf("!!%s!!", strParse[0]);
-        if ((strncmp(strParse[0], "ls", 2) == 0))
+
+        switch (fork())
         {
-            ls(strParse);
+        case 0:
+        {
+            display(currentPath, currentUser->pw_name);
+            break;
         }
-        else if ((strncmp(strParse[0], "cd", 2) == 0))
+
+        default:
         {
-            cd(strParse, &currentPath, &lenPath);
+            wait(NULL);
+            break;
+        }
+        }
+
+        char **parseStr = parse(readLine());
+        if ((strncmp(parseStr[0], "ls", 2) == 0))
+        {
+            ls(parseStr);
+        }
+        else if ((strncmp(parseStr[0], "cd", 2) == 0))
+        {
+            cd(parseStr, &currentPath, &lenPath);
+        }
+        else if (strncmp(parseStr[0], "help", 4) == 0)
+        {
+            help();
         }
     }
 }
 
 void cd(char **str, char **path, int *lenPath)
 {
-    if (strncmp(str[1], "..", 2) == 0 && str[1][2] == '\0')
+    if (strncmp(str[1], "..", 2) == 0 && *lenPath > 1)
     {
         (*path)[--*lenPath] = '\0';
-        while((*path)[*lenPath - 1] != '/'){
+        while ((*path)[*lenPath - 1] != '/')
+        {
             (*path)[--*lenPath] = '\0';
         }
-        switch (fork())
-        {
-        case 0:
-            chdir(*path);
-            break;
-        
-        default:
-            wait(NULL);
-            break;
-        }
+        chdir(*path);
     }
 }
 
+void help()
+{
+    printf(
+        "\tcd [dir]\n"
+        "\tls\n");
+}
 
 void ls(char **str)
 {
@@ -108,7 +123,14 @@ void ls(char **str)
     {
     case 0:
     {
-        execlp("ls", "ls", NULL, NULL);
+        if (strncmp(str[1], "-l", 2) == 0)
+        {
+            execlp("ls", "ls", "-l", NULL);
+        }
+        else
+        {
+            execlp("ls", "ls", NULL, NULL);
+        }
         break;
     }
 
@@ -122,19 +144,5 @@ void ls(char **str)
 
 int main()
 {
-    switch (fork())
-    {
-    case 0:
-    {
-        run();
-        exit(EXIT_SUCCESS);
-        break;
-    }
-    default:
-    {
-        wait(NULL);
-        break;
-    }
-    }
-    exit(EXIT_SUCCESS);
+    run();
 }
