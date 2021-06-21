@@ -4,141 +4,154 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <unistd.h>
+#include <limits.h>
 #include <pwd.h>
 #include <string.h>
+#include "include/Command.h"
+#include "include/executable.h"
 
 void display(char *path, char *user)
 {
     printf("%s:%s$ ", user, path);
 }
 
-char **parse(char *str)
+struct Command parse(char *str)
 {
     char *p = strtok(str, " ");
-    char **res = NULL;
-    int n_space = 0;
-    while (p)
-    {
-        res = realloc(res, sizeof(char *) * ++n_space);
+    struct Command returned = {};
 
-        if (res == NULL)
+    if (p)
+    {
+        returned.command = malloc(sizeof(char *));
+        if (returned.command == NULL)
         {
             exit(EXIT_FAILURE);
         }
-        res[n_space - 1] = p;
-
+        returned.command = p;
         p = strtok(NULL, " ");
     }
-    res = realloc(res, sizeof(char *) * (n_space + 1));
-    res[n_space] = 0;
-    return res;
+
+    int n_space = 0;
+    returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
+    returned.argv[n_space - 1] = returned.command;
+    while (p)
+    {
+        returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
+
+        if (returned.argv == NULL)
+        {
+            exit(EXIT_FAILURE);
+        }
+        returned.argv[n_space - 1] = p;
+        p = strtok(NULL, " ");
+    }
+    returned.argv = realloc(returned.argv, sizeof(char *) * n_space + 1);
+    returned.argv[n_space] = NULL;
+    returned.argc = n_space;
+    return returned;
 }
 
 char *readLine()
 {
-    int lenStr = 0;
+    size_t lenStr = 0;
     char *str = NULL;
-    getline(&str, &lenStr, stdin);
+    ssize_t str_len = 0;
+    if ((str_len = getline(&str, &lenStr, stdin)) == -1)
+    {
+        free(str);
+        return NULL;
+    }
+    if (str[str_len - 1] == '\n')
+    {
+        str[str_len - 1] = '\0';
+    }
     return str;
 }
 
-void setHomePath(char **path, int *lenPath, char *userName)
+void setHomePath(int *lenPath, char *userName)
 {
-    (*path) = (char *)malloc(sizeof(char) * 256);
+    char *path = malloc(sizeof(char) * PATH_MAX);
     for (int i = 0; i < 256; ++i)
     {
-        (*path)[i] = '\0';
+        path[i] = '\0';
     }
-    strcat(*path, "/home/");
-    strcat(*path, userName);
-    strcat(*path, "/");
-    for (; (*path)[*lenPath] != '\0'; ++*lenPath)
+    strcat(path, "/home/");
+    strcat(path, userName);
+    for (; path[*lenPath] != '\0'; ++*lenPath)
         ;
-    chdir(*path);
-}
-
-void run()
-{
-    struct passwd *currentUser = getpwuid(getuid());
-    char *currentPath = NULL;
-    int lenPath = 0;
-    setHomePath(&currentPath, &lenPath, currentUser->pw_name);
-    while (1)
-    {
-
-        switch (fork())
-        {
-        case 0:
-        {
-            display(currentPath, currentUser->pw_name);
-            break;
-        }
-
-        default:
-        {
-            wait(NULL);
-            break;
-        }
-        }
-
-        char **parseStr = parse(readLine());
-        if ((strncmp(parseStr[0], "ls", 2) == 0))
-        {
-            ls(parseStr);
-        }
-        else if ((strncmp(parseStr[0], "cd", 2) == 0))
-        {
-            cd(parseStr, &currentPath, &lenPath);
-        }
-        else if (strncmp(parseStr[0], "help", 4) == 0)
-        {
-            help();
-        }
-    }
-}
-
-void cd(char **str, char **path, int *lenPath)
-{
-    if (strncmp(str[1], "..", 2) == 0 && *lenPath > 1)
-    {
-        (*path)[--*lenPath] = '\0';
-        while ((*path)[*lenPath - 1] != '/')
-        {
-            (*path)[--*lenPath] = '\0';
-        }
-        chdir(*path);
-    }
+    chdir(path);
 }
 
 void help()
 {
     printf(
-        "\tcd [dir]\n"
-        "\tls\n");
+        "cd [dir]\n"
+        "ls\n");
 }
 
-void ls(char **str)
+void ls(char ***argv)
 {
+    int status;
     switch (fork())
     {
+    case -1:
+        exit(EXIT_FAILURE);
+        break;
     case 0:
-    {
-        if (strncmp(str[1], "-l", 2) == 0)
-        {
-            execlp("ls", "ls", "-l", NULL);
-        }
-        else
-        {
-            execlp("ls", "ls", NULL, NULL);
-        }
-        break;
-    }
-
+        execvp("ls", *argv);
     default:
-    {
-        wait(NULL);
+        wait(&status);
         break;
     }
+}
+
+void cd(char ***argv)
+{
+    if ((*argv)[1] == NULL)
+    {
+        printf("ERROR: Expected argument\n");
+    }
+    if (chdir((*argv)[1]) != 0)
+    {
+        printf("ERROR: Couldn`t change directory: %s\n", (*argv[1]));
+    }
+}
+
+char* getCurrentDir()
+{
+    char *pathName = malloc(sizeof(char) * PATH_MAX);
+    char *error = getwd(pathName);
+    if (error == NULL){
+        printf("Error: couldn`t get current path\n");
+    }
+    return pathName;
+}
+
+void run()
+{
+    struct passwd *currentUser = getpwuid(getuid());
+    int lenPath = 0;
+    setHomePath(&lenPath, currentUser->pw_name);
+    while (1)
+    {
+
+        display(getCurrentDir(), currentUser->pw_name);
+
+        struct Command parseStr = parse(readLine());
+
+        if ((strcmp(parseStr.command, "ls") == 0))
+        {
+            ls(&parseStr.argv);
+        }
+        else if ((strcmp(parseStr.command, "cd") == 0))
+        {
+            cd(&parseStr.argv);
+        }
+        else if (strcmp(parseStr.command, "help") == 0)
+        {
+            help();
+        }
     }
 }
 

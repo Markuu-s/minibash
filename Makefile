@@ -1,10 +1,17 @@
+files = main.c include/*.h src/*.c
+pathCompile = runningProgram
+
 all:
-	gcc main.c -o executable/run 
-	gcc -g main.c -o executable/debug
+	gcc $(files) -o $(pathCompile)/run 
+	gcc $(files) -fsanitize=address -o $(pathCompile)/san 
+	gcc -g $(files) -o $(pathCompile)/debug
 run:
-	./executable/run
+	./$(pathCompile)/run
 debug:
-	gdb executable/debug
+	gdb $(pathCompile)/debug
+san:
+	./$(pathCompile)/san
 clean:
-	rm executable/run
-	rm executable/debug
+	rm $(pathCompile)/run
+	rm $(pathCompile)/debug
+	rm $(pathCompile)/san

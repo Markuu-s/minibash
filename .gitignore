@@ -1,1 +1,4 @@
 /executable
+/.vscode
+*.json
+*.gch
