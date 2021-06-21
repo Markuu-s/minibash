@@ -3,8 +3,8 @@ pathCompile = runningProgram
 
 all:
 	gcc $(files) -o $(pathCompile)/run 
-	gcc $(files) -fsanitize=address -o $(pathCompile)/san 
-	gcc -g $(files) -o $(pathCompile)/debug
+#	gcc $(files) -fsanitize=address -o $(pathCompile)/san 
+#	gcc -g $(files) -o $(pathCompile)/debug
 run:
 	./$(pathCompile)/run
 debug:

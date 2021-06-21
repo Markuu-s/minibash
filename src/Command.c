@@ -1,4 +1,4 @@
-#include "include/Command.h"
+#include "../include/Command.h"
 bool find(const struct Command *x, char *finder)
 {
     for (int i = 0; i < x->argc; ++i)
