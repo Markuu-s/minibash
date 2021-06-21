@@ -11,31 +11,28 @@ struct Command parse(char *str)
 
     if (p)
     {
-        returned.command = malloc(sizeof(char *));
-        if (returned.command == NULL)
-        {
-            exit(EXIT_FAILURE);
-        }
-        returned.command = p;
-        p = strtok(NULL, " ");
+        returned.command = p; //strDup
     }
 
     int n_space = 0;
     returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
     returned.argv[n_space - 1] = returned.command;
+
+    p = strtok(NULL, " ");
     while (p)
     {
-        returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
 
+        returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
         if (returned.argv == NULL)
         {
             exit(EXIT_FAILURE);
         }
-        returned.argv[n_space - 1] = p;
-        p = strtok(NULL, " ");
+
+        returned.argv[n_space - 1] = p; // strdup
+        p = strtok(NULL, " "); 
     }
-    returned.argv = realloc(returned.argv, sizeof(char *) * n_space + 1);
-    returned.argv[n_space] = NULL;
+    returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
+    returned.argv[n_space - 1] = NULL;
     returned.argc = n_space;
     return returned;
 }
@@ -66,7 +63,7 @@ void setHomePath(char *userName)
     }
     strcat(path, "/home/");
     strcat(path, userName);
-    
+
     chdir(path);
 }
 
@@ -92,18 +89,6 @@ void ls(char ***argv)
     }
 }
 
-bool dirExists(const char **path)
-{
-    struct stat info;
-
-    if (stat(*path, &info) != 0)
-        return false;
-    else if (info.st_mode & S_IFDIR)
-        return true;
-    else
-        return false;
-}
-
 void cd(char ***argv)
 {
     if ((*argv)[1] == NULL)
@@ -125,8 +110,7 @@ char *getCurrentDir()
     return pathName;
 }
 
-void clearCommand(struct Command *x){
-    for(int i = 0; i < x->argc - 1; ++i){ // Last element is NULL
-        free(x->argv[i]);
-    }
+void clearCommand(struct Command *x)
+{
+    free(x->argv[0]);
 }

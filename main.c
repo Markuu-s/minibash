@@ -8,8 +8,8 @@ int main()
     while (1)
     {
         display(getCurrentDir(), currentUser->pw_name);
-
-        struct Command parseStr = parse(readLine());
+        char *str = readLine();
+        struct Command parseStr = parse(str);
 
         if ((strcmp(parseStr.command, "ls") == 0))
         {
@@ -24,7 +24,7 @@ int main()
             help();
         }
 
-        clearCommand(&parseStr);
+        free(str);
     }
     free(currentUser);
 }
