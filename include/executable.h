@@ -12,6 +12,7 @@
 #include <pwd.h>
 #include <string.h>
 #include "Command.h"
+#include "Process.h"
 
 /*
     Display information about user and current
@@ -36,7 +37,7 @@ void setHomePath(char *userName);
 
 /*
     List of available commands
-*/  
+*/
 void help();
 
 /*
@@ -59,4 +60,8 @@ char *getCurrentDir();
 */
 void clearCommand(struct Command *x);
 
+/*
+    add deskr
+*/
+void undefProcess(struct Command *command, struct VectorProcesses *x);
 #endif // EXECUTABLE_H

@@ -1,10 +1,14 @@
 #include "include/Command.h"
 #include "include/executable.h"
+#include "include/Process.h"
 
 int main()
 {
     struct passwd *currentUser = getpwuid(getuid());
     setHomePath(currentUser->pw_name);
+    struct VectorProcesses processes;
+    initVectorProcesses(&processes);
+
     while (1)
     {
         display(getCurrentDir(), currentUser->pw_name);
@@ -22,6 +26,8 @@ int main()
         else if (strcmp(parseStr.command, "help") == 0)
         {
             help();
+        } else {
+            undefProcess(&parseStr, &processes);
         }
 
         free(str);

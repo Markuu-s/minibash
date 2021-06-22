@@ -1,4 +1,6 @@
 #include "../include/executable.h"
+#include "../include/Process.h"
+#include "../include/Command.h"
 void display(char *path, char *user)
 {
     printf("%s:%s$ ", user, path);
@@ -8,6 +10,7 @@ struct Command parse(char *str)
 {
     char *p = strtok(str, " ");
     struct Command returned = {};
+    returned.shadow = false;
 
     if (p)
     {
@@ -29,11 +32,22 @@ struct Command parse(char *str)
         }
 
         returned.argv[n_space - 1] = p; // strdup
-        p = strtok(NULL, " "); 
+        p = strtok(NULL, " ");
     }
-    returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
-    returned.argv[n_space - 1] = NULL;
-    returned.argc = n_space;
+
+    if (strcmp(returned.argv[n_space - 1], "&") == 0)
+    {
+        returned.shadow = true;
+        returned.argv[n_space - 1] = NULL;
+    }
+    else
+    {
+
+        returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
+        returned.argv[n_space - 1] = NULL;
+        returned.argc = n_space;
+    }
+
     return returned;
 }
 
@@ -77,14 +91,15 @@ void help()
 void ls(char ***argv)
 {
     int status;
-    switch (fork())
+    pid_t child;
+    switch (child = fork())
     {
     case -1:
         exit(EXIT_FAILURE);
     case 0:
         execvp("ls", *argv);
     default:
-        wait(&status);
+        waitpid(child, NULL, NULL);
         break;
     }
 }
@@ -113,4 +128,28 @@ char *getCurrentDir()
 void clearCommand(struct Command *x)
 {
     free(x->argv[0]);
+}
+
+void undefProcess(struct Command *command, struct VectorProcesses *x){
+    pid_t pid;
+    switch (pid = fork())
+    {
+    case 0:
+        if (execvp(command->argv[0], command->argv) == -1){
+            printf("Error: couldn`t execute");
+            exit(EXIT_FAILURE);
+        }
+        exit(EXIT_SUCCESS);
+    
+    default:
+        if (command->shadow){
+            struct Process* temp = (struct Process*)malloc(sizeof(struct Process) * 1);
+            temp[0].id = pid;
+            temp[0].isWork = true;
+            addBackProcess(&*x, &*temp);
+        } else {
+            waitpid(pid, NULL, NULL);
+        }
+        break;
+    }
 }
