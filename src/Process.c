@@ -15,5 +15,7 @@ void addBackProcess(struct VectorProcesses *x, struct Process *process)
         x->processes = (struct Process *)realloc(x->processes, sizeof(struct Process) * x->capacity);
     }
     x->processes[x->size++] = *process;
+
+    
 }
 

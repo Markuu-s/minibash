@@ -1,6 +1,7 @@
 #include "../include/executable.h"
 #include "../include/Process.h"
 #include "../include/Command.h"
+struct VectorProcesses processes;
 void display(char *path, char *user)
 {
     printf("%s:%s$ ", user, path);
@@ -12,14 +13,13 @@ struct Command parse(char *str)
     struct Command returned = {};
     returned.shadow = false;
 
+    int n_space = 0;
     if (p)
     {
-        returned.command = p; //strDup
+        returned.command = strdup(p);
+        returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
+        returned.argv[n_space - 1] = returned.command;
     }
-
-    int n_space = 0;
-    returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
-    returned.argv[n_space - 1] = returned.command;
 
     p = strtok(NULL, " ");
     while (p)
@@ -31,18 +31,17 @@ struct Command parse(char *str)
             exit(EXIT_FAILURE);
         }
 
-        returned.argv[n_space - 1] = p; // strdup
+        returned.argv[n_space - 1] = strdup(p);
         p = strtok(NULL, " ");
     }
 
-    if (strcmp(returned.argv[n_space - 1], "&") == 0)
+    if (n_space > 0 && strcmp(returned.argv[n_space - 1], "&") == 0)
     {
         returned.shadow = true;
         returned.argv[n_space - 1] = NULL;
     }
     else
     {
-
         returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
         returned.argv[n_space - 1] = NULL;
         returned.argc = n_space;
@@ -59,8 +58,10 @@ char *readLine()
     if ((str_len = getline(&str, &lenStr, stdin)) == -1)
     {
         free(str);
+        
         return NULL;
     }
+    printf("\n!!!%d!!!\n!!!%d!!!\n", str_len, lenStr);
     if (str[str_len - 1] == '\n')
     {
         str[str_len - 1] = '\0';
@@ -130,26 +131,80 @@ void clearCommand(struct Command *x)
     free(x->argv[0]);
 }
 
-void undefProcess(struct Command *command, struct VectorProcesses *x){
+struct Process foreground;
+void undefProcess(struct Command *command)
+{
     pid_t pid;
     switch (pid = fork())
     {
     case 0:
-        if (execvp(command->argv[0], command->argv) == -1){
+        if (execvp(command->argv[0], command->argv) == -1)
+        {
             printf("Error: couldn`t execute");
             exit(EXIT_FAILURE);
         }
         exit(EXIT_SUCCESS);
-    
+
     default:
-        if (command->shadow){
-            struct Process* temp = (struct Process*)malloc(sizeof(struct Process) * 1);
+        if (command->shadow)
+        {
+            struct Process *temp = (struct Process *)malloc(sizeof(struct Process) * 1);
             temp[0].id = pid;
-            temp[0].isWork = true;
-            addBackProcess(&*x, &*temp);
-        } else {
-            waitpid(pid, NULL, NULL);
+            temp[0].finish = false;
+            addBackProcess(&processes, &*temp);
+        }
+        else
+        {
+            foreground.id = pid;
+            int status;
+            //wait(NULL);
+            waitpid(pid, &status, 0);
         }
         break;
+    }
+}
+
+void endForeground(int sigInt)
+{
+    printf("\n!!!\n");
+    if (foreground.id != -1)
+    {
+        kill(foreground.id, SIGTERM);
+        foreground.finish = true;
+    }
+}
+
+void endTask(int sigInt)
+{
+    pid_t pid = waitpid(-1, NULL, 0);
+    if (pid == foreground.id)
+    {
+        foreground.finish = true;
+    }
+    else
+    {
+        for (int i = 0; i < processes.size; ++i)
+        {
+            if (processes.processes[i].id == pid)
+            {
+                processes.processes[i].finish = true;
+                break;
+            }
+        }
+    }
+}
+
+void quit()
+{
+    if (!foreground.finish){
+        kill(foreground.id, SIGTERM);
+        foreground.finish = true;
+    }
+
+    for(int i = 0; i < processes.size; ++i){
+        if (!processes.processes[i].finish){
+            kill(processes.processes[i].id, SIGTERM);
+            processes.processes[i].finish = true;
+        }
     }
 }

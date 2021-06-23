@@ -8,7 +8,7 @@
 struct Process
 {
     pid_t id;
-    bool isWork;
+    bool finish;
 };
 
 struct VectorProcesses{

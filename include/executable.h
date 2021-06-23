@@ -63,5 +63,20 @@ void clearCommand(struct Command *x);
 /*
     add deskr
 */
-void undefProcess(struct Command *command, struct VectorProcesses *x);
+void undefProcess(struct Command *command);
+
+/*
+
+*/
+void endForeground();
+
+/*
+
+*/
+void endTask();
+
+/*
+
+*/
+void quit();
 #endif // EXECUTABLE_H
