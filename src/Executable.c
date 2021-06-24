@@ -111,7 +111,7 @@ void cd(char ***argv)
 char *getCurrentDir()
 {
     char *pathName = malloc(sizeof(char) * PATH_MAX);
-    char *error = getwd(pathName);
+    char *error = getcwd(pathName, PATH_MAX);
     if (error == NULL)
     {
         printf("Error: couldn`t get current path\n");
@@ -150,7 +150,6 @@ void undefProcess(struct Command *command)
         {
             foreground.id = pid;
             int status;
-            //wait(NULL);
             waitpid(pid, &status, 0);
         }
         break;

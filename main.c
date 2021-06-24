@@ -1,8 +1,7 @@
-#include "lib/Command.h"
-#include "lib/Executable.h"
-#include "lib/Process.h"
+#include "Executable.h"
+#include "Process.h"
+#include "Command.h"
 #include <errno.h>
-// NDEBUG;
 extern struct VectorProcesses processes;
 extern struct Process foreground;
 
