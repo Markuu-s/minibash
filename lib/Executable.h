@@ -68,12 +68,12 @@ void undefProcess(struct Command *command);
 /*
 
 */
-void endForeground();
+void endForeground(int sigInt);
 
 /*
 
 */
-void endTask();
+void endTask(int sigInt);
 
 /*
 

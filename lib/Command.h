@@ -5,12 +5,10 @@
 #include <stdio.h>
 struct Command
 {
-    char *command;
     char **argv;
     int argc;
     bool shadow;
 };
 
-bool find(const struct Command *x, char *finder);
 
 #endif // COMMAND_H

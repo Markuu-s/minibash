@@ -1,9 +1,9 @@
-files = main.c include/*.h src/*.c
+files = main.c lib/*.h src/*.c
 pathCompile = runningProgram
 
 all:
 	gcc $(files) -o $(pathCompile)/run 
-#	gcc $(files) -fsanitize=address -o $(pathCompile)/san 
+#  gcc $(files) -fsanitize=address -o $(pathCompile)/san 
 	gcc -g $(files) -o $(pathCompile)/debug
 run:
 	./$(pathCompile)/run
@@ -15,3 +15,4 @@ clean:
 	rm $(pathCompile)/run
 	rm $(pathCompile)/debug
 	rm $(pathCompile)/san
+	rm include/*.gch

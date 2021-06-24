@@ -1,7 +1,9 @@
-#include "../include/executable.h"
-#include "../include/Process.h"
-#include "../include/Command.h"
+#include "../lib/Executable.h"
+#include "../lib/Process.h"
+#include "../lib/Command.h"
 struct VectorProcesses processes;
+#define EXIT 0
+#define CONTINUE 1
 void display(char *path, char *user)
 {
     printf("%s:%s$ ", user, path);
@@ -14,14 +16,6 @@ struct Command parse(char *str)
     returned.shadow = false;
 
     int n_space = 0;
-    if (p)
-    {
-        returned.command = strdup(p);
-        returned.argv = realloc(returned.argv, sizeof(char *) * ++n_space);
-        returned.argv[n_space - 1] = returned.command;
-    }
-
-    p = strtok(NULL, " ");
     while (p)
     {
 
@@ -61,7 +55,6 @@ char *readLine()
         
         return NULL;
     }
-    printf("\n!!!%d!!!\n!!!%d!!!\n", str_len, lenStr);
     if (str[str_len - 1] == '\n')
     {
         str[str_len - 1] = '\0';
@@ -100,7 +93,7 @@ void ls(char ***argv)
     case 0:
         execvp("ls", *argv);
     default:
-        waitpid(child, NULL, NULL);
+        waitpid(child, NULL, 0);
         break;
     }
 }
@@ -140,7 +133,7 @@ void undefProcess(struct Command *command)
     case 0:
         if (execvp(command->argv[0], command->argv) == -1)
         {
-            printf("Error: couldn`t execute");
+            printf("Error: couldn`t execute\n");
             exit(EXIT_FAILURE);
         }
         exit(EXIT_SUCCESS);
@@ -166,7 +159,7 @@ void undefProcess(struct Command *command)
 
 void endForeground(int sigInt)
 {
-    printf("\n!!!\n");
+
     if (foreground.id != -1)
     {
         kill(foreground.id, SIGTERM);
@@ -196,15 +189,15 @@ void endTask(int sigInt)
 
 void quit()
 {
-    if (!foreground.finish){
-        kill(foreground.id, SIGTERM);
-        foreground.finish = true;
-    }
-
     for(int i = 0; i < processes.size; ++i){
         if (!processes.processes[i].finish){
             kill(processes.processes[i].id, SIGTERM);
             processes.processes[i].finish = true;
         }
     }
+    if (!foreground.finish){
+        kill(foreground.id, SIGINT);
+        foreground.finish = true;
+    }
+
 }

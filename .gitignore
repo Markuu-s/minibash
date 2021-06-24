@@ -9,3 +9,4 @@
 *.gch
 /CMakeFiles
 *.out
+/build

@@ -1,30 +1,25 @@
-#include "include/Command.h"
-#include "include/executable.h"
-#include "include/Process.h"
+#include "lib/Command.h"
+#include "lib/Executable.h"
+#include "lib/Process.h"
 #include <errno.h>
 // NDEBUG;
 extern struct VectorProcesses processes;
 extern struct Process foreground;
 
-void pr(int r)
-{
-    printf("\nSIgnal handle\n");
-}
-
 int main()
 {
     foreground.id = -1;
+    foreground.finish = true;
     signal(SIGINT, endForeground);
-    printf("%s\n", strerror(errno));
-    
     signal(SIGCHLD, endTask);
-    //signal(SIGTERM, pr);
 
     struct passwd *currentUser = getpwuid(getuid());
     setHomePath(currentUser->pw_name);
     initVectorProcesses(&processes);
 
-    while (1)
+    bool run = true;
+
+    while (run)
     {
         display(getCurrentDir(), currentUser->pw_name);
         char *str = readLine();
@@ -34,26 +29,27 @@ int main()
         }
         struct Command parseStr = parse(str);
 
-        if (parseStr.command == NULL)
+        if (parseStr.argv[0] == NULL)
         {
             continue;
         }
 
-        if ((strcmp(parseStr.command, "ls") == 0))
+        if ((strcmp(parseStr.argv[0], "ls") == 0))
         {
             ls(&parseStr.argv);
         }
-        else if ((strcmp(parseStr.command, "cd") == 0))
+        else if ((strcmp(parseStr.argv[0], "cd") == 0))
         {
             cd(&parseStr.argv);
         }
-        else if (strcmp(parseStr.command, "help") == 0)
+        else if (strcmp(parseStr.argv[0], "help") == 0)
         {
             help();
         }
-        else if (strcmp(parseStr.command, "quit") == 0)
+        else if (strcmp(parseStr.argv[0], "quit") == 0)
         {
             quit();
+            run = false;
         }
         else
         {
@@ -61,6 +57,7 @@ int main()
         }
 
         clearCommand(&parseStr);
+        free(str);
     }
-    // free(currentUser);
+    
 }
