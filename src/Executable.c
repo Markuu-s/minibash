@@ -1,6 +1,6 @@
-#include "../lib/Executable.h"
-#include "../lib/Process.h"
-#include "../lib/Command.h"
+#include "Executable.h"
+#include "Process.h"
+#include "Command.h"
 struct VectorProcesses processes;
 #define EXIT 0
 #define CONTINUE 1

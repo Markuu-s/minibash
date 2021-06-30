@@ -54,7 +54,7 @@ int main()
         {
             undefProcess(&parseStr);
         }
-
+        
         clearCommand(&parseStr);
         free(str);
     }
