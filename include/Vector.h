@@ -31,4 +31,12 @@ typedef struct
  */
 void init_vector(Vector *v, size_t sizeOfdata);
 
+/**
+ * @brief Add to end to vector of data
+ * 
+ * @param v is pointer to Vector
+ * @param data element to add in back of vector
+ */
+void push_back(Vector *v, void *data);
+
 #endif // VECTOR_H

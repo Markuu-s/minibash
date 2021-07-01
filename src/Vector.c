@@ -7,3 +7,14 @@ void init_vector(Vector *v, size_t sizeOfdata)
     v->sizeOfData = sizeOfdata;
     v->data = (void **)malloc(v->capacity * sizeof(void *));
 }
+
+void push_back(Vector *v, void *data)
+{
+    if (v->capacity == v->size)
+    {
+        v->capacity *= INCREASE_CAPACITY;
+        v->data = realloc(v, sizeof(void*) * v->capacity);
+    }
+    v->data[v->size] = malloc(v->sizeOfData);
+    memcpy(v->data[v->size++], data, v->sizeOfData);
+}
