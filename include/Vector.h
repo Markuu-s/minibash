@@ -17,10 +17,18 @@
  */
 typedef struct
 {
-    void *data;
+    void **data;
     int size;
     int capacity;
     size_t sizeOfData;
 } Vector;
+
+/**
+ * @brief First initialization of Vector
+ * 
+ * @param v is pointer to Vector
+ * @param sizeOfdata is sizeof(type)
+ */
+void init_vector(Vector *v, size_t sizeOfdata);
 
 #endif // VECTOR_H
