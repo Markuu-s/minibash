@@ -48,4 +48,11 @@ void push_back(Vector *v, void *data);
  */
 void *get(Vector *v, int idx);
 
+/**
+ * @brief Free memory of struct Vector
+ * 
+ * @param v is pointer to Vector
+ */
+void freeVector(Vector *v);
+
 #endif // VECTOR_H

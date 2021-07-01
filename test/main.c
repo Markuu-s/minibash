@@ -26,4 +26,7 @@ int main()
     for(int i = 0; i < a.size; ++i){
         printf("%d\n", *(int*)get(&b, i));
     }
+
+    freeVector(&a);
+    freeVector(&b);
 }

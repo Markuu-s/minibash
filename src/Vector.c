@@ -27,3 +27,9 @@ void *get(Vector *v, int idx)
     }
     return v->data[idx];
 }
+
+void freeVector(Vector *v)
+{
+    free(v->data);
+    free(v);
+}
