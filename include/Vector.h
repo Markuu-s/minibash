@@ -39,4 +39,13 @@ void init_vector(Vector *v, size_t sizeOfdata);
  */
 void push_back(Vector *v, void *data);
 
+/**
+ * @brief Get element with index of Vector
+ * 
+ * @param v is pointer to Vector
+ * @param idx is index of get object
+ * @return void* 
+ */
+void *get(Vector *v, int idx);
+
 #endif // VECTOR_H

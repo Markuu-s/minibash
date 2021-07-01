@@ -18,3 +18,12 @@ void push_back(Vector *v, void *data)
     v->data[v->size] = malloc(v->sizeOfData);
     memcpy(v->data[v->size++], data, v->sizeOfData);
 }
+
+void *get(Vector *v, int idx)
+{
+    if (idx < 0 || idx >= v->size)
+    {
+        return NULL;
+    }
+    return v->data[idx];
+}
