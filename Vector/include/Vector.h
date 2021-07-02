@@ -55,4 +55,13 @@ void *get(Vector *v, int idx);
  */
 void freeVector(Vector *v);
 
+/**
+ * @brief Change value of Vector by index
+ * 
+ * @param v is pointer to Vector
+ * @param idx is index of variable value
+ * @param data is value to set
+ */
+void set(Vector *v, int idx, void *data);
+
 #endif // VECTOR_H
