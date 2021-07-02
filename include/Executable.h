@@ -23,4 +23,10 @@ char *getCurrentName();
  */
 void display();
 
+/**
+ * @brief Set directory as home path
+ * 
+ */
+void setHomePath();
+
 #endif // EXECUTABLE_H

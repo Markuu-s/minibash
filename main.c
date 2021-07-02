@@ -2,6 +2,7 @@
 
 int main(){
 
+    setHomePath();
     while(1)
     {
         display();

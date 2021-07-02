@@ -27,3 +27,17 @@ void display()
     free(userName);
     free(pathName);
 }
+
+void setHomePath(){
+    char *path = malloc(sizeof(char) * PATH_MAX);
+    for (int i = 0; i < 256; ++i)
+    {
+        path[i] = '\0';
+    }
+    strcat(path, "/home/");
+
+    char *userName = getCurrentName();
+
+    chdir(path);
+    free(path);
+}
