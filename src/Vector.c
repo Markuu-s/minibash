@@ -30,6 +30,16 @@ void *get(Vector *v, int idx)
 
 void freeVector(Vector *v)
 {
-    free(v->data);
-    free(v);
+    for(int i = 0; i < v->size; ++i){
+        free(v->data[i]);
+    }
+}
+
+void set(Vector *v, int idx, void *data)
+{
+    if (idx < 0 || idx >= v->size)
+    {
+        return;
+    }
+    memcpy(v->data[idx], data, v->sizeOfData);
 }
