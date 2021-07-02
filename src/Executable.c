@@ -41,3 +41,20 @@ void setHomePath(){
     chdir(path);
     free(path);
 }
+
+char *readLine()
+{
+    size_t lenStr = 0;
+    char *str = NULL;
+    ssize_t str_len = 0;
+    if ((str_len = getline(&str, &lenStr, stdin)) == -1)
+    {
+        free(str);
+        return NULL;
+    }
+    if (str[str_len - 1] == '\n')
+    {
+        str[str_len - 1] = '\0';
+    }
+    return str;
+}

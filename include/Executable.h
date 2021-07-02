@@ -29,4 +29,11 @@ void display();
  */
 void setHomePath();
 
+/**
+ * @brief 
+ * 
+ * @return char* 
+ */
+char *readLine();
+
 #endif // EXECUTABLE_H
