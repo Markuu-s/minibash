@@ -136,96 +136,83 @@ void Pipes2(struct Commands *argv)
     int pfd2[2];
     if (pipe(pfd1) == -1)
     {
-        exit("Pfd1 error");
+        error("Pfd1 error");
     }
 
     if (pipe(pfd2) == -1)
     {
-        exit("Pfd2 error");
+        error("Pfd2 error");
     }
 
-    // Only write  ... -> pfd1[1]
-    switch (fork())
+    for (int i = 0; i < argv->size; ++i)
     {
-    case -1:
-        exit("Fork doesn`t work");
-    case 0:
-
-        close(pfd1[0]);
-        close(pfd2[0]);
-        close(pfd2[1]);
-
-        if (dup2(pfd1[1], STDOUT_FILENO) == -1)
+        pid_t pid;
+        switch (pid = fork())
         {
-            exit("dup2(pfd1) error");
-        }
-
-        close(pfd1[1]);
-        execvp(argv->commands[0].argv[0], argv->commands[0].argv);
-
-    default:
-        //wait(NULL);
-        break;
-        
-    }
-
-    // Write and read pfd1[1] -> read from pfd1[0] -> pfd2[1]
-    for (int i = 1; i < argv->size - 1; ++i)
-    {
-        switch (fork())
-        {
-        case -1:
-            exit("Fork doesn`t work");
-            break;
         case 0:
-        close(pfd1[1]);
-        close(pfd2[0]);
+            if (i == 0)
+            {
+                close(pfd1[0]);
+                close(pfd2[0]);
+                close(pfd2[1]);
 
-        if (dup2(pfd1[0], STDIN_FILENO) == -1)
-        {
-            exit("dup2(pfd1) error");
-        }
-        if (dup2(pfd2[1], STDOUT_FILENO) == -1)
-        {
-            exit("dup2(pfd1) error");
-        }
+                if (dup2(pfd1[1], STDOUT_FILENO) == -1)
+                {
+                    error("Dup2 #1 doesn`t work");
+                }
+                close(pfd1[1]);
+            }
+            else if (i + 1 != argv->size)
+            {
+                close(pfd1[i % 2]);
+                close(pfd2[(i % 2 + 1) % 2]);
+                if (dup2(pfd1[(i % 2 + 1) % 2], ((i % 2 == 1) ? STDIN_FILENO : STDOUT_FILENO)) == -1)
+                {
+                    error("Dup2 #2 doesn`t work");
+                }
+                if (dup2(pfd2[i % 2], ((i % 2 == 1) ? STDIN_FILENO : STDOUT_FILENO)) == -1)
+                {
+                    error("Dup2 #3 doesn`t work");
+                }
+                close(pfd1[(i % 2 + 1) % 2]);
+                close(pfd2[i % 2]);
+            }
+            else
+            {
+                if (i % 2 == 0)
+                {
+                    close(pfd1[0]);
+                    close(pfd1[1]);
+                    close(pfd2[1]);
+                    if (dup2(pfd2[0], STDIN_FILENO) == -1)
+                    {
+                        error("Dup2 #4 doesn`t work");
+                    }
+                    close(pfd2[0]);
+                }
+                else
+                {
+                    close(pfd1[1]);
+                    close(pfd2[0]);
+                    close(pfd2[1]);
+                    if (dup2(pfd1[0], STDIN_FILENO) == -1)
+                    {
+                        error("Dup2 #5 doesn`t work");
+                    }
+                    close(pfd1[0]);
+                }
 
-
-        close(pfd1[0]);
-        close(pfd2[1]);
-
-        execvp(argv->commands[i].argv[0], argv->commands[i].argv);
-
-
-
+                if (execvp(argv->commands[i].argv[0], argv->commands[i].argv) == -1)
+                {
+                    error("execvp");
+                }
+            }
         default:
-            //wait(NULL);
-            break;
+            waitpid(pid, NULL, 0);
+            
         }
-    }
-
-    //Only read pfd2[1] -> read from pfd2[0]
-    switch (fork())
-    {
-    case -1:
-        exit("Fork doesn`t work");
-    case 0:
-        close(pfd1[0]);
-        close(pfd1[1]);
-        close(pfd2[1]);
-        if (dup2(pfd2[0], STDIN_FILENO) == -1){
-            printf("dup2(pfd2[0]) doesn`t work");
-        }
-
-        close(pfd2[0]);
-        execvp(argv->commands[argv->size - 1].argv[argv->size - 1], argv->commands[argv->size - 1].argv);
-
-    default:
-        //wait(NULL);
-        break;
     }
 }
-
 int main()
 {
     struct Commands a;
@@ -243,7 +230,7 @@ int main()
     second.argc = 2;
     second.argv = (char **)malloc(sizeof(char *) * (second.argc + 1));
     second.argv[0] = "grep";
-    second.argv[1] = "a";
+    second.argv[1] = "f";
     second.argv[2] = (char *)NULL;
     push_bask(&a, &second);
 
@@ -253,8 +240,7 @@ int main()
     third.argv[0] = "grep";
     third.argv[1] = "f";
     third.argv[2] = (char *)NULL;
-    push_bask(&a, &third);
-    //Pipes(&a);
+    //push_bask(&a, &third);
 
     struct Command r;
     r.argc = 2;
@@ -262,6 +248,6 @@ int main()
     r.argv[0] = "grep";
     r.argv[1] = "i";
     r.argv[2] = (char *)NULL;
-    push_bask(&a, &third);
+    //push_bask(&a, &r);
     Pipes2(&a);
 }
