@@ -9,8 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include "Vector.h"
 #include "Command.h"
+#include "Process.h"
 
 /**
  * @brief Get the Current Name of session
@@ -32,9 +34,9 @@ void display();
 void setHomePath();
 
 /**
- * @brief 
+ * @brief read line from standart input
  * 
- * @return char* 
+ * @return char* is a line read
  */
 char *readLine();
 
@@ -59,5 +61,26 @@ void ls(char **argv);
  * @param argv is command and arguments for it.
  */
 void cd(char **argv);
+
+/**
+ * @brief 
+ * 
+ * @param
+ */
+void undefinedProcess(Command *command);
+
+/**
+ * @brief 
+ * 
+ * @param sigInt 
+ */
+void endForeground(int sigInt);
+
+/**
+ * @brief 
+ * 
+ * @param sigInt 
+ */
+void endTask(int sigInt);
 
 #endif // EXECUTABLE_H

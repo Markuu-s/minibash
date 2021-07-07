@@ -3,6 +3,8 @@
 #define PROCESS_H
 
 #include <sys/types.h>
+#include <stdbool.h>
+#include "Vector.h"
 
 /**
  * @brief This struct contains information about proccess

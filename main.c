@@ -1,9 +1,18 @@
 #include "Executable.h"
 
+extern Process foreground;
+extern Vector backroundProcesses;
+
 int main()
 {
-
+    foreground.id = -1;
+    foreground.finish = true;
+    init_vector(&backroundProcesses, sizeof(Process));
     setHomePath();
+
+    signal(SIGINT, endForeground);
+    signal(SIGCHLD, endTask);
+
     while (1)
     {
         display();
@@ -27,10 +36,16 @@ int main()
             {
                 cd(command.argv);
             }
+            else
+            {
+                undefinedProcess(&command);
+            }
         }
         else // This command has pipe
         {
         }
     }
+
+    freeVector(&backroundProcesses);
     return 0;
 }

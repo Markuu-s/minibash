@@ -1,5 +1,8 @@
 #include "Executable.h"
 
+Process foreground;
+Vector backroundProcesses;
+
 char *getCurrentName()
 {
     struct passwd *userInfo = getpwuid(getuid());
@@ -129,5 +132,68 @@ void cd(char **argv)
     if (chdir(argv[1]) != 0)
     {
         printf("cd: %s: No such file or directory\n", argv[1]);
+    }
+}
+
+void undefinedProcess(Command *command)
+{
+    pid_t pid;
+    switch (pid = fork())
+    {
+    case 0:
+        if (execvp(command->argv[0], command->argv) == -1)
+        {
+            printf("Error: couldn`t execute\n");
+            exit(EXIT_FAILURE);
+        }
+
+    default:
+        if (command->shadow)
+        {
+            Process *temp = (Process *)malloc(sizeof(Process));
+            temp[0].id = pid;
+            temp[0].finish = false;
+            push_back(&backroundProcesses, temp);
+        }
+        else
+        {
+            foreground.id = pid;
+            foreground.finish = false;
+            waitpid(pid, NULL, 0);
+            foreground.id = -1;
+            foreground.finish = true;
+        }
+        break;
+    }
+}
+
+void endForeground(int sigInt)
+{
+    if (foreground.id != -1)
+    {
+        kill(foreground.id, SIGTERM);
+        foreground.finish = true;
+    }
+}
+
+void endTask(int sigInt)
+{
+    pid_t pid = getpid();
+    if (pid == foreground.id)
+    {
+        foreground.finish = true;
+    }
+    else
+    {
+        for (int i = 0; i < backroundProcesses.size; ++i)
+        {
+            Process process = *(Process *)get(&backroundProcesses, i);
+            if (process.id == pid)
+            {
+                process.finish = true;
+                set(&backroundProcesses, i, &process);
+                break;
+            }
+        }
     }
 }
