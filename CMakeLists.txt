@@ -4,7 +4,7 @@ project(minibash LANGUAGES C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-set(LIB_FILES main.c Vector/src/Vector.c src/Executable.c)
+set(LIB_FILES main.c Vector/src/Vector.c src/Executable.c src/Process.c)
 
 # add_subdirectory()
 
