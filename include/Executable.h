@@ -53,4 +53,11 @@ Vector parse(char *str);
  */
 void ls(char **argv);
 
+/**
+ * @brief cd is system command. It allows navigate by folders.
+ * 
+ * @param argv is command and arguments for it.
+ */
+void cd(char **argv);
+
 #endif // EXECUTABLE_H

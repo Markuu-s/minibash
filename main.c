@@ -23,6 +23,10 @@ int main()
             {
                 ls(command.argv);
             }
+            else if (strcmp(command.argv[0], "cd") == 0)
+            {
+                cd(command.argv);
+            }
         }
         else // This command has pipe
         {

@@ -28,7 +28,8 @@ void display()
     free(pathName);
 }
 
-void setHomePath(){
+void setHomePath()
+{
     char *path = malloc(sizeof(char) * PATH_MAX);
     for (int i = 0; i < 256; ++i)
     {
@@ -118,5 +119,15 @@ void ls(char **argv)
     default:
         waitpid(pid, NULL, 0);
         break;
+    }
+}
+
+void cd(char **argv)
+{
+    if (argv[1] == NULL)
+        return;
+    if (chdir(argv[1]) != 0)
+    {
+        printf("cd: %s: No such file or directory\n", argv[1]);
     }
 }
