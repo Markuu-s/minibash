@@ -37,9 +37,11 @@ void setHomePath(){
     strcat(path, "/home/");
 
     char *userName = getCurrentName();
+    strcat(path, userName);
 
     chdir(path);
     free(path);
+    free(userName);
 }
 
 char *readLine()
