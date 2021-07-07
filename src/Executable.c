@@ -58,3 +58,48 @@ char *readLine()
     }
     return str;
 }
+
+Vector parse(char *str)
+{
+    char *p = strtok(str, " ");
+    Vector returned;
+    init_vector(&returned, sizeof(Command));
+
+    while (p)
+    {
+        Command temp;
+        temp.shadow = false;
+        temp.argv = NULL;
+
+        int n_space = 0;
+        while (p)
+        {
+            char *partStr = strdup(p);
+            p = strtok(NULL, " ");
+
+            if (strcmp("|", partStr) == 0)
+            {
+                free(partStr);
+                break;
+            }
+
+            temp.argv = realloc(temp.argv, sizeof(char *) * ++n_space);
+            temp.argv[n_space - 1] = partStr;
+        }
+
+        if (n_space > 0 && strcmp(temp.argv[n_space - 1], "&") == 0)
+        {
+            temp.shadow = true;
+            temp.argv[n_space - 1] = NULL;
+        }
+        else
+        {
+            temp.argv = realloc(temp.argv, sizeof(char *) * ++n_space);
+            temp.argv[n_space - 1] = NULL;
+            temp.argc = n_space;
+        }
+
+        push_back(&returned, &temp);
+    }
+    return returned;
+}

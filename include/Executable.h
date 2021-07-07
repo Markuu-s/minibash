@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "Vector.h"
+#include "Command.h"
 
 /**
  * @brief Get the Current Name of session
@@ -35,5 +37,13 @@ void setHomePath();
  * @return char* 
  */
 char *readLine();
+
+/**
+ * @brief this function parse string into command
+ * 
+ * @param str is command from input
+ * @return Vector<Command>
+ */
+Vector parse(char *str);
 
 #endif // EXECUTABLE_H
