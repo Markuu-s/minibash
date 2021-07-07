@@ -103,3 +103,18 @@ Vector parse(char *str)
     }
     return returned;
 }
+
+void ls(char **argv)
+{
+    pid_t pid;
+    switch (pid = fork())
+    {
+    case -1:
+        exit(EXIT_FAILURE);
+    case 0:
+        execvp("ls", argv);
+    default:
+        waitpid(pid, NULL, 0);
+        break;
+    }
+}

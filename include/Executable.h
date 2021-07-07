@@ -46,4 +46,11 @@ char *readLine();
  */
 Vector parse(char *str);
 
+/**
+ * @brief ls is system command. It shows information about files in directory
+ * 
+ * @param argv is command and arguments for it
+ */
+void ls(char **argv);
+
 #endif // EXECUTABLE_H
